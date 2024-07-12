@@ -64,11 +64,20 @@
             background-color: #4cae4c;
         }
 
+        .task-list-container {
+            max-height: 400px; /* Adjust as needed */
+            overflow-y: auto;
+            width: 800px; /* Increased width */
+            margin-top: 50px;
+            background-color: rgba(255, 255, 255, 0.7); /* Added for better visibility */
+            border-radius: 8px; /* Added for better aesthetics */
+            padding: 10px; /* Added for spacing inside the container */
+        }
+
         ul {
             list-style-type: none;
             padding: 0;
-            width: 100%;
-            max-width: 400px;
+            margin: 0; /* Remove default margin */
         }
 
         li {
@@ -146,7 +155,9 @@
         <h1 id="title"></h1>
         <input type="text" id="taskInput" placeholder="Enter a task" />
         <button onclick="addTask()">Add Task</button>
-        <ul id="taskList"></ul>
+        <div class="task-list-container">
+            <ul id="taskList"></ul>
+        </div>
     </div>
 
     <div id="fireworks"></div>
@@ -162,6 +173,59 @@
                 span.textContent = char;
                 title.appendChild(span);
             }
+
+            fetch('https://dummyjson.com/todos')
+                .then(response => response.json())
+                .then(data => {
+                    const taskList = document.getElementById('taskList');
+                    data.todos.forEach(todo => {
+                        if (!todo.completed) {
+                            // Create list item
+                            let li = document.createElement('li');
+
+                            // Create checkbox
+                            let checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.onchange = function() {
+                                li.classList.toggle('done');
+                                checkAllTasksCompleted();
+                            };
+
+                            // Create task text node
+                            let textNode = document.createElement('span');
+                            textNode.textContent = todo.todo;
+                            textNode.className = 'task-text';
+
+                            // Create delete button
+                            let deleteButton = document.createElement('button');
+                            deleteButton.textContent = 'Delete';
+                            deleteButton.className = 'delete';
+                            deleteButton.onclick = function() {
+                                taskList.removeChild(li);
+                                checkAllTasksCompleted();
+                            };
+
+                            // Create edit button
+                            let editButton = document.createElement('button');
+                            editButton.textContent = 'Edit';
+                            editButton.className = 'edit';
+                            editButton.onclick = function() {
+                                editTask(li, textNode, editButton, deleteButton);
+                            };
+
+                            // Append elements to list item
+                            li.appendChild(checkbox);
+                            li.appendChild(textNode);
+                            li.appendChild(editButton);
+                            li.appendChild(deleteButton);
+
+                            // Append list item to task list
+                            taskList.appendChild(li);
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching tasks:', error))
+            
         });
 
         function addTask() {
